@@ -244,18 +244,26 @@ function draw() {
 
     update_uniform(modelview,projection, 1);
 
+    rotate(modelview, -tableAngleRad, [0, 1, 0]);
     translate(modelview, [-tablex, -tabley, -tablez]);
     scale(modelview, [1/tableScaleFactor, 1/tableScaleFactor, 1/tableScaleFactor]);
-    rotate(modelview, -tableAngleRad, [0, 1, 0]);
 
-    /*
-    // draw the Cube , object[2]
+    //-------draw the Cube , object[2]-------
+    let cubeScaleFactor = 0.5;
+    let cubex = -0.8;
+    let cubey = 0.95;
+    let cubez = 1;
+
     installModel(objects[2]);
     currentModelNumber = 2;
 
-    //TODO: Your code goes here.
+    translate(modelview, [cubex, cubey, cubez]);
+    scale(modelview, [cubeScaleFactor, cubeScaleFactor, cubeScaleFactor]);
+
     update_uniform(modelview,projection, 2);
-    */
+
+    scale(modelview, [1/cubeScaleFactor, 1/cubeScaleFactor, 1/cubeScaleFactor]);
+    translate(modelview, [cubex, cubey, cubez]);
 }
 
 /*
