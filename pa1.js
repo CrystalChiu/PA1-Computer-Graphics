@@ -44,11 +44,35 @@ function degToRad(degrees) {
 function perspective(out, fovy, aspect, near, far){
 
     if (document.getElementById("my_gl").checked) {
-         /*
-        TODO: Your code goes here.
-        Write the code to perform perspective transformation.
-        Think about what would be the input and output to the function would be
-        */
+        const f = 1.0 / Math.tan(fovy / 2);
+        const nf = 1 / (near - far);
+
+        const t = near * Math.tan(fovy / 2);
+        const b = -t;
+        const r = t * aspect;
+        const l = -r;
+
+        out[0] = 2 * near / (r - l);
+        out[1] = 0;
+        out[2] = 0;
+        out[3] = 0;
+
+        out[4] = 0;
+        out[5] = 2 * near / (t - b);
+        out[6] = 0;
+        out[7] = 0;
+
+        out[8] = (r + l) / (r - l);
+        out[9] = (t + b) / (t - b);
+        out[10] = (far + near) * nf;
+        out[11] = -1;
+
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 2 * far * near * nf;
+        out[15] = 0;
+
+        return out;
     }
     else {
         mat4.perspective(out, fovy, aspect, near, far);
@@ -63,6 +87,14 @@ function translate(modelview, translation){
         Write the code to perform translation transformation.
         Think about what would be the input and output to the function would be
         */
+        const translationMatrix = mat4.create();
+        mat4.identity(translationMatrix);
+    
+        translationMatrix[12] = translation[0];
+        translationMatrix[13] = translation[1];
+        translationMatrix[14] = translation[2];
+    
+        mat4.multiply(modelview, modelview, translationMatrix);
     }
     else {
         /*
@@ -82,6 +114,36 @@ function rotate(modelview, angle, axis){
         Note: One of the input to this function would be axis vector around which you would rotate.
         Think about what would be the input and output to the function would be
         */
+        var axisVector = vec3.normalize(vec3.create(), axis);
+
+        var x = axisVector[0];
+        var y = axisVector[1];
+        var z = axisVector[2];
+        var c = Math.cos(angle);
+        var s = Math.sin(angle);
+        var t = 1 - c;
+
+        var rotateMatrix = mat4.create();
+        rotateMatrix[0] = t * x * x + c;
+        rotateMatrix[1] = t * x * y + s * z;
+        rotateMatrix[2] = t * x * z - s * y;
+        rotateMatrix[3] = 0;
+        rotateMatrix[4] = t * x * y - s * z;
+        rotateMatrix[5] = t * y * y + c;
+        rotateMatrix[6] = t * y * z + s * x;
+        rotateMatrix[7] = 0;
+        rotateMatrix[8] = t * x * z + s * y;
+        rotateMatrix[9] = t * y * z - s * x;
+        rotateMatrix[10] = t * z * z + c;
+        rotateMatrix[11] = 0;
+        rotateMatrix[12] = 0;
+        rotateMatrix[13] = 0;
+        rotateMatrix[14] = 0;
+        rotateMatrix[15] = 1;
+
+        var temp = mat4.create();
+        mat4.copy(temp, modelview);
+        mat4.multiply(modelview, temp, rotateMatrix);
     }
     else {
         /*
@@ -93,7 +155,7 @@ function rotate(modelview, angle, axis){
 
 }
 
-function scale(modelview, scaling){
+function scale(modelview, scaleFactor){
 
     if (document.getElementById("my_gl").checked) {
         /*
@@ -101,13 +163,21 @@ function scale(modelview, scaling){
         Write the code to perform scale transformation.
         Think about what would be the input and output to the function would be
         */
+        const scalingMatrix = mat4.create();
+        mat4.identity(scalingMatrix);
+
+        scalingMatrix[0] = scaleFactor[0];
+        scalingMatrix[5] = scaleFactor[1];
+        scalingMatrix[10] = scaleFactor[2];
+
+        mat4.multiply(modelview, modelview, scalingMatrix);
     }
     else {
         /*
         TODO: Your code goes here.
         use inbuilt_gl functions to perform scaling
         */
-        mat4.scale(modelview, modelview, scaling);
+        mat4.scale(modelview, modelview, scaleFactor);
     }
 }
 
@@ -121,7 +191,7 @@ function draw() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     projection = mat4.create();
-    perspective(projection, Math.PI/5, 1, 10, 20);
+    perspective(projection, Math.PI/6, 1, 10, 25);
     modelview = rotator.getViewMatrix();
 
     // draw the 1st chair , object[0]
@@ -263,7 +333,7 @@ function draw() {
     update_uniform(modelview,projection, 2);
 
     scale(modelview, [1/cubeScaleFactor, 1/cubeScaleFactor, 1/cubeScaleFactor]);
-    translate(modelview, [cubex, cubey, cubez]);
+    translate(modelview, [-cubex, -cubey, -cubez]);
 }
 
 /*
